@@ -24,9 +24,9 @@ import (
 func main() {
   slackBot, err := slackbot.New(
     slackbot.SlackConfig{
-      Port: getPort(),
-      BotID: os.Getenv("SLACK_BOT_ID"),
-      APIToken: os.Getenv("SLACK_API_TOKEN"),
+      Port:              getPort(),
+      BotID:             os.Getenv("SLACK_BOT_ID"),
+      APIToken:          os.Getenv("SLACK_API_TOKEN"),
       VerificationToken: os.Getenv("SLACK_VERIFICATION_TOKEN"),
     },
   )
