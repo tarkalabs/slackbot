@@ -13,6 +13,8 @@ $ go get github.com/tarkalabs/slackbot
 ## Example
 
 ```go
+package main
+
 import (
   "github.com/tarkalabs/slackbot"
   "github.com/tarkalabs/slackbot/commander"
