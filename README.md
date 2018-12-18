@@ -18,7 +18,9 @@ package main
 import (
   "github.com/tarkalabs/slackbot"
   "github.com/tarkalabs/slackbot/commander"
+  "github.com/tarkalabs/slackbot/interactor"
   "github.com/tarkalabs/slackbot/message"
+  "github.com/tarkalabs/slackbot/submitter"
 )
 
 func main() {
@@ -44,6 +46,29 @@ func main() {
         Message: ":laughing: Oh my, sure! Please click the button below to proceed",
         Body: newEntryPostMessageParameters(),
       }
+    })
+  ))
+
+  slackBot.Interactor.Add(interactor.NewInteraction(
+    "new_entry",
+    interactor.WithHandler(func(action *slackevents.MessageAction, client *slack.Client) {
+      dialog := newEntryDialog()
+      client.OpenDialog(action.TriggerId, *dialog)
+    })
+  ))
+
+  slackBot.Submitter.Add(submitter.NewSubmission(
+    "entry_submission",
+    submitter.WithHandler(func(submission *slack.DialogCallback) (message.Message, error) {
+      slackUser, err := slackBit.GetUser(submission.User.ID)
+      if err != nil {
+        return message.Message{}, err
+      }
+      // Do Work
+      return message.Message{
+        Message: "Recorded. You are awesome :hungging_face:",
+        Body:    &slack.PostMessageParameters{},
+      }, nil
     })
   ))
 
