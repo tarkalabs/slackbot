@@ -1,4 +1,4 @@
-# SlackBot
+# SlackBot [![Build Status](https://travis-ci.org/tarkalabs/slackbot.svg?branch=master)](https://travis-ci.org/tarkalabs/slackbot)
 
 SlackBot is a framework for building Slack Bots utilizing the Slack APIso
 
