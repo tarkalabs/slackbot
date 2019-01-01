@@ -25,30 +25,6 @@ type SlackConfig struct {
 
 type SlackConfigs func(*SlackConfig)
 
-func WithPort(port string) SlackConfigs {
-	return func(o *SlackConfig) {
-		o.Port = port
-	}
-}
-
-func WithBotID(botID string) SlackConfigs {
-	return func(o *SlackConfig) {
-		o.BotID = botID
-	}
-}
-
-func WithAPIToken(apiToken string) SlackConfigs {
-	return func(o *SlackConfig) {
-		o.APIToken = apiToken
-	}
-}
-
-func WithVerificationToken(verificationToken string) SlackConfigs {
-	return func(o *SlackConfig) {
-		o.VerificationToken = verificationToken
-	}
-}
-
 func WithEventMatcher(eventMatcher EventMatcher) SlackConfigs {
 	return func(o *SlackConfig) {
 		o.EventMatcher = eventMatcher
@@ -82,8 +58,7 @@ type SlackBot struct {
 	Submitter  submitter.Submitter
 }
 
-func New(opts ...SlackConfigs) (*SlackBot, error) {
-	config := SlackConfig{}
+func New(config SlackConfig, opts ...SlackConfigs) (*SlackBot, error) {
 	for _, o := range opts {
 		o(&config)
 	}
