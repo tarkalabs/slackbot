@@ -32,7 +32,7 @@ func main() {
       APIToken:          os.Getenv("SLACK_API_TOKEN"),
       VerificationToken: os.Getenv("SLACK_VERIFICATION_TOKEN"),
     },
-    WithEventMatcher(func (data *slackevents.MessageEvent) bool {
+    slackbot.WithEventMatcher(func (data *slackevents.MessageEvent) bool {
       // filter IMs
       return data.ChannelType == "im" && data.BotID == "" && data.SubType == ""
     },
