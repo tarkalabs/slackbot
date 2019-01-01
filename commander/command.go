@@ -45,17 +45,6 @@ func WithHandler(handler CommandHandler) CommandOption {
 	}
 }
 
-func WithIMHandler(handler CommandHandler) CommandOption {
-	return func(o *CommandOptions) {
-		o.Handler = func(data *slackevents.MessageEvent) error {
-			if data.ChannelType == "im" && data.BotID == "" && data.SubType == "" {
-				return handler(data)
-			}
-			return nil
-		}
-	}
-}
-
 type Command struct {
 	Name             string
 	ShortDescription string
