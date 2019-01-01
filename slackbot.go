@@ -23,6 +23,31 @@ type SlackConfig struct {
 	EventMatcher
 }
 
+type SlackConfigs func(*SlackConfig)
+
+func WithConfig(port, botId, apiToken, verificationToken string) SlackConfigs {
+	return func(o *SlackConfig) {
+		o.Port = port
+		o.BotID = botId
+		o.APIToken = apiToken
+		o.VerificationToken = verificationToken
+	}
+}
+
+func WithEventMatcher(eventMatcher EventMatcher) SlackConfigs {
+	return func(o *SlackConfig) {
+		o.EventMatcher = eventMatcher
+	}
+}
+
+func WithAllEventMatcher() SlackConfigs {
+	return func(o *SlackConfig) {
+		o.EventMatcher = func(d *slackevents.MessageEvent) bool {
+			return true
+		}
+	}
+}
+
 func (config SlackConfig) GetVerificationToken() slackevents.TokenComparator {
 	return slackevents.TokenComparator{
 		VerificationToken: config.VerificationToken,
@@ -42,7 +67,12 @@ type SlackBot struct {
 	Submitter  submitter.Submitter
 }
 
-func New(config SlackConfig) (*SlackBot, error) {
+func New(opts ...SlackConfigs) (*SlackBot, error) {
+	config := SlackConfig{}
+	for _, o := range opts {
+		o(&config)
+	}
+
 	slackClient := slack.New(config.APIToken)
 	slackClient.SetDebug(true)
 
