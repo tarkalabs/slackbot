@@ -13,11 +13,14 @@ import (
 	"github.com/tarkalabs/slackbot/submitter"
 )
 
+type EventMatcher func(*slackevents.MessageEvent) bool
+
 type SlackConfig struct {
 	Port              string
 	BotID             string
 	APIToken          string
 	VerificationToken string
+	EventMatcher
 }
 
 func (config SlackConfig) GetVerificationToken() slackevents.TokenComparator {
@@ -105,9 +108,11 @@ func (slackBot SlackBot) listenAndServe() {
 
 func (slackBot SlackBot) handleEvents() {
 	for d := range slackBot.eventChan {
-		err := slackBot.Commander.Handle(d)
-		if err != nil {
-			slackBot.SendHelpMessage(d.Channel, message.BotDidNotUnderstandMessage())
+		if slackBot.config.EventMatcher(d) {
+			err := slackBot.Commander.Handle(d)
+			if err != nil {
+				slackBot.SendHelpMessage(d.Channel, message.BotDidNotUnderstandMessage())
+			}
 		}
 	}
 }
