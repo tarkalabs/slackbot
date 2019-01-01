@@ -21,6 +21,7 @@ import (
   "github.com/tarkalabs/slackbot/interactor"
   "github.com/tarkalabs/slackbot/message"
   "github.com/tarkalabs/slackbot/submitter"
+  "github.com/tarkalabs/slackbot/utils"
 )
 
 func main() {
@@ -30,6 +31,10 @@ func main() {
       BotID:             os.Getenv("SLACK_BOT_ID"),
       APIToken:          os.Getenv("SLACK_API_TOKEN"),
       VerificationToken: os.Getenv("SLACK_VERIFICATION_TOKEN"),
+    },
+    WithEventMatcher(func (data *slackevents.MessageEvent) bool {
+      // filter IMs
+      return data.ChannelType == "im" && data.BotID == "" && data.SubType == ""
     },
   )
   if err != nil {
@@ -41,34 +46,38 @@ func main() {
     "Add new entry",
     "Will open a dialog to enter your data",
     commander.WithEqualMatcher(),
-    commander.WithHandler(func(data *slackevents.MessageEvent) (message.Message, error) {
-      return message.Message{
-        Message: ":laughing: Oh my, sure! Please click the button below to proceed",
-        Body: newEntryPostMessageParameters(),
-      }
+    commander.WithHandler(func(data *slackevents.MessageEvent) error {
+      slackBot.SendMessage(message.New(
+        data.Channel,
+        ":laughing: Oh my, sure! Please click the button below to proceed",
+        newEntryPostMessageParameters(),
+      ))
+      return nil
     })
   ))
 
   slackBot.Interactor.Add(interactor.NewInteraction(
     "new_entry",
-    interactor.WithHandler(func(action *slackevents.MessageAction, client *slack.Client) {
+    interactor.WithHandler(func(action *slackevents.MessageAction) error {
       dialog := newEntryDialog()
-      client.OpenDialog(action.TriggerId, *dialog)
+      return slackBot.SlackClient.OpenDialog(action.TriggerId, *dialog)
     })
   ))
 
   slackBot.Submitter.Add(submitter.NewSubmission(
     "entry_submission",
-    submitter.WithHandler(func(submission *slack.DialogCallback) (message.Message, error) {
+    submitter.WithHandler(func(submission *slack.DialogCallback) error {
       slackUser, err := slackBit.GetUser(submission.User.ID)
       if err != nil {
-        return message.Message{}, err
+        return err
       }
       // Do Work
-      return message.Message{
-        Message: "Recorded. You are awesome :hungging_face:",
-        Body:    &slack.PostMessageParameters{},
-      }, nil
+      slackBot.SendMessage(message.New(
+        submission.User.ID,
+        "Recorded. You are awesome :hungging_face:",
+        utils.GetPostMessage(""),
+      ))
+      return nil
     })
   ))
 
