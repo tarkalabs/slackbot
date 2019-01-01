@@ -25,11 +25,26 @@ type SlackConfig struct {
 
 type SlackConfigs func(*SlackConfig)
 
-func WithConfig(port, botId, apiToken, verificationToken string) SlackConfigs {
+func WithPort(port string) SlackConfigs {
 	return func(o *SlackConfig) {
 		o.Port = port
-		o.BotID = botId
+	}
+}
+
+func WithBotID(botID string) SlackConfigs {
+	return func(o *SlackConfig) {
+		o.BotID = botID
+	}
+}
+
+func WithAPIToken(apiToken string) SlackConfigs {
+	return func(o *SlackConfig) {
 		o.APIToken = apiToken
+	}
+}
+
+func WithVerificationToken(verificationToken string) SlackConfigs {
+	return func(o *SlackConfig) {
 		o.VerificationToken = verificationToken
 	}
 }
