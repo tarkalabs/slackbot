@@ -5,7 +5,6 @@ import (
 
 	"github.com/nlopes/slack"
 	log "github.com/sirupsen/logrus"
-	"github.com/tarkalabs/slackbot/message"
 )
 
 type Submitter struct {
@@ -33,10 +32,10 @@ func (s *Submitter) Add(submission Submission) {
 	s.submissions = append(s.submissions, submission)
 }
 
-func (s *Submitter) Handle(submission *slack.DialogCallback) (message.Message, error) {
+func (s *Submitter) Handle(submission *slack.DialogCallback) error {
 	su, err := s.Find(submission.CallbackID)
 	if err != nil {
-		return message.Message{}, err
+		return err
 	}
 	return su.Handle(submission)
 }

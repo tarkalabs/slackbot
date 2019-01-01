@@ -12,12 +12,6 @@ import (
 )
 
 var (
-	HelpCommand = NewCommand(
-		"help",
-		"List all the commands",
-		"",
-		WithEqualMatcher(),
-	)
 	InvalidCommandError = errors.New("Invalid Command")
 )
 
@@ -43,16 +37,12 @@ func (c *Commander) Match(text string) (Command, error) {
 	return Command{}, InvalidCommandError
 }
 
-func (c *Commander) Handle(data *slackevents.MessageEvent) (message.Message, error) {
-	if HelpCommand.Match(data.Text) {
-		return c.HelpMessage(message.HelpMessage()), nil
-	}
+func (c *Commander) Handle(data *slackevents.MessageEvent) error {
 	cmd, err := c.Match(data.Text)
 	if err != nil {
-		return c.HelpMessage(message.BotDidNotUnderstandMessage()), err
-	} else {
-		return cmd.Handle(data)
+		return err
 	}
+	return cmd.Handle(data)
 }
 
 func (c *Commander) Add(command Command) {
@@ -63,16 +53,9 @@ func (c *Commander) Add(command Command) {
 	c.commands = append(c.commands, command)
 }
 
-func (c *Commander) Length() int {
-	return len(c.commands)
-}
-
 func (c *Commander) Help() string {
 	var helps []string
-	allcommands := []Command{}
-	allcommands = append(allcommands, c.commands...)
-	allcommands = append(allcommands, HelpCommand)
-	for _, c := range allcommands {
+	for _, c := range c.commands {
 		help := fmt.Sprintf("*`%s` - %s* \n %s", c.Name, c.ShortDescription, c.Description)
 		helps = append(helps, help)
 	}

@@ -2,10 +2,9 @@ package submitter
 
 import (
 	"github.com/nlopes/slack"
-	"github.com/tarkalabs/slackbot/message"
 )
 
-type SubmissionHandler func(*slack.DialogCallback) (message.Message, error)
+type SubmissionHandler func(*slack.DialogCallback) error
 
 type SubmissionOption func(*SubmissionOptions)
 type SubmissionOptions struct {
@@ -35,6 +34,6 @@ func NewSubmission(name string, opts ...SubmissionOption) Submission {
 	}
 }
 
-func (su *Submission) Handle(submission *slack.DialogCallback) (message.Message, error) {
+func (su *Submission) Handle(submission *slack.DialogCallback) error {
 	return su.Handler(submission)
 }

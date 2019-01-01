@@ -4,15 +4,14 @@ import (
 	"testing"
 
 	"github.com/nlopes/slack"
-	"github.com/tarkalabs/slackbot/message"
 )
 
 func buildSubmitter() Submitter {
 	submitter := Submitter{}
 	submitter.Add(NewSubmission(
 		"entry_submission",
-		WithHandler(func(submission *slack.DialogCallback) (message.Message, error) {
-			return message.Message{}, nil
+		WithHandler(func(submission *slack.DialogCallback) error {
+			return nil
 		}),
 	))
 	return submitter
@@ -69,7 +68,7 @@ func TestAddDuplicate(t *testing.T) {
 
 func TestHandle(t *testing.T) {
 	submitter := buildSubmitter()
-	_, err := submitter.Handle(&slack.DialogCallback{
+	err := submitter.Handle(&slack.DialogCallback{
 		CallbackID: "entry_submission",
 	})
 	if err != nil {
@@ -79,7 +78,7 @@ func TestHandle(t *testing.T) {
 
 func TestHandleInvalid(t *testing.T) {
 	submitter := Submitter{}
-	_, err := submitter.Handle(&slack.DialogCallback{
+	err := submitter.Handle(&slack.DialogCallback{
 		CallbackID: "entry_submission",
 	})
 	if err == nil {

@@ -1,11 +1,10 @@
 package interactor
 
 import (
-	"github.com/nlopes/slack"
 	"github.com/nlopes/slack/slackevents"
 )
 
-type InteractionHandler func(*slackevents.MessageAction, *slack.Client)
+type InteractionHandler func(*slackevents.MessageAction) error
 
 type InteractionOption func(*InteractionOptions)
 type InteractionOptions struct {
@@ -35,6 +34,6 @@ func NewInteraction(name string, opts ...InteractionOption) Interaction {
 	}
 }
 
-func (in *Interaction) Handle(action *slackevents.MessageAction, client *slack.Client) {
-	in.Handler(action, client)
+func (in *Interaction) Handle(action *slackevents.MessageAction) error {
+	return in.Handler(action)
 }

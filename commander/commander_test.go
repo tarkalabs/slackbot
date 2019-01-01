@@ -19,8 +19,8 @@ var commandtests = []struct {
 			"Add new entry",
 			"Will open a dialog to enter your timesheet data",
 			WithEqualMatcher(),
-			WithHandler(func(data *slackevents.MessageEvent) (message.Message, error) {
-				return message.Message{}, nil
+			WithHandler(func(data *slackevents.MessageEvent) error {
+				return nil
 			}),
 		), 1,
 	},
@@ -30,8 +30,8 @@ var commandtests = []struct {
 			"Quick Add",
 			"For example, when you type *quickadd 12/09/2018 | Client1 | 4 | Worked on 3 stories* \nI will record *4 hours* of effort on *12 Sep 2018* for Client *Client1* with a note *Worked on 3 stories*",
 			WithPrefixMatcher(),
-			WithHandler(func(data *slackevents.MessageEvent) (message.Message, error) {
-				return message.Message{}, nil
+			WithHandler(func(data *slackevents.MessageEvent) error {
+				return nil
 			}),
 		), 2,
 	},
@@ -63,13 +63,6 @@ func TestAddDuplicate(t *testing.T) {
 	})
 	if len(commander.commands) != lenBefore {
 		t.Errorf("Duplicate Command should not get added. Got length: %d, expected: %d", len(commander.commands), lenBefore)
-	}
-}
-
-func TestLength(t *testing.T) {
-	commander := buildCommander()
-	if commander.Length() != 2 {
-		t.Errorf("Length is not accurate. Got: %d, expected: %d", commander.Length(), 2)
 	}
 }
 
@@ -113,9 +106,7 @@ func TestHelp(t *testing.T) {
 	commander := buildCommander()
 	helpstring := "*`add` - Add new entry* \n Will open a dialog to enter your timesheet data" +
 		"\n\n" +
-		"*`quickadd` - Quick Add* \n For example, when you type *quickadd 12/09/2018 | Client1 | 4 | Worked on 3 stories* \nI will record *4 hours* of effort on *12 Sep 2018* for Client *Client1* with a note *Worked on 3 stories*" +
-		"\n\n" +
-		"*`help` - List all the commands* \n "
+		"*`quickadd` - Quick Add* \n For example, when you type *quickadd 12/09/2018 | Client1 | 4 | Worked on 3 stories* \nI will record *4 hours* of effort on *12 Sep 2018* for Client *Client1* with a note *Worked on 3 stories*"
 	if commander.Help() != helpstring {
 		t.Errorf("Help does not match. Got: %s, Expected: %s", commander.Help(), helpstring)
 	}
@@ -126,9 +117,7 @@ func TestHelpMessage(t *testing.T) {
 	msgStr := "test help message"
 	helpstring := "*`add` - Add new entry* \n Will open a dialog to enter your timesheet data" +
 		"\n\n" +
-		"*`quickadd` - Quick Add* \n For example, when you type *quickadd 12/09/2018 | Client1 | 4 | Worked on 3 stories* \nI will record *4 hours* of effort on *12 Sep 2018* for Client *Client1* with a note *Worked on 3 stories*" +
-		"\n\n" +
-		"*`help` - List all the commands* \n "
+		"*`quickadd` - Quick Add* \n For example, when you type *quickadd 12/09/2018 | Client1 | 4 | Worked on 3 stories* \nI will record *4 hours* of effort on *12 Sep 2018* for Client *Client1* with a note *Worked on 3 stories*"
 	msg := message.Message{
 		Message: msgStr,
 		Body: &slack.PostMessageParameters{
@@ -146,32 +135,19 @@ func TestHelpMessage(t *testing.T) {
 	}
 }
 
-func TestHelpHandle(t *testing.T) {
-	commander := Commander{}
-	_, err := commander.Handle(&slackevents.MessageEvent{
-		Text: "help",
-	})
-	if err != nil {
-		t.Errorf("Unexpected error: %v", err)
-	}
-}
-
 func TestAddHandle(t *testing.T) {
 	commander := buildCommander()
-	msg, err := commander.Handle(&slackevents.MessageEvent{
+	err := commander.Handle(&slackevents.MessageEvent{
 		Text: "add",
 	})
 	if err != nil {
 		t.Errorf("Unexpected error from Add Command handler: %v", err)
 	}
-	if (msg != message.Message{}) {
-		t.Errorf("Invalid msg from Add Command handler. Got: %v, Expected: %v", msg, message.Message{})
-	}
 }
 
 func TestInvalidHandle(t *testing.T) {
 	commander := Commander{}
-	_, err := commander.Handle(&slackevents.MessageEvent{
+	err := commander.Handle(&slackevents.MessageEvent{
 		Text: "add",
 	})
 	if err == nil {

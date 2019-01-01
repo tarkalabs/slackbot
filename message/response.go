@@ -31,10 +31,6 @@ var entryAddedAck = []string{
 	"Saved it. Way to go! :heart:",
 }
 
-var errors = []string{
-	":astonished: Something went wrong, kindly refer the help to ensure you're doing it right",
-}
-
 var reminder = []string{
 	"ding ding ding! :bellhop_bell: Time to fill Timesheet!",
 	":guardsman: Pardon me Sire! But I must disturb you to remind you to fill your Timesheet for the day!",
@@ -61,10 +57,6 @@ func ReadyToAcceptEntryAckMessage() string {
 // EntryAddedAckMessage returns a string to respond when the bot added the entry successfully
 func EntryAddedAckMessage() string {
 	return pickRandom(entryAddedAck)
-}
-
-func ErrorMessage() string {
-	return pickRandom(errors)
 }
 
 func ReminderMessage() string {

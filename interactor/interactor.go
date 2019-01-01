@@ -3,7 +3,6 @@ package interactor
 import (
 	"errors"
 
-	"github.com/nlopes/slack"
 	"github.com/nlopes/slack/slackevents"
 	log "github.com/sirupsen/logrus"
 )
@@ -33,9 +32,10 @@ func (i *Interactor) Add(interaction Interaction) {
 	i.interactions = append(i.interactions, interaction)
 }
 
-func (i *Interactor) Handle(action *slackevents.MessageAction, client *slack.Client) {
+func (i *Interactor) Handle(action *slackevents.MessageAction) error {
 	in, err := i.Find(action.Actions[0].Name)
-	if err == nil {
-		in.Handle(action, client)
+	if err != nil {
+		return err
 	}
+	return in.Handle(action)
 }

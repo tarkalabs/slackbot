@@ -4,12 +4,11 @@ import (
 	"strings"
 
 	"github.com/nlopes/slack/slackevents"
-	"github.com/tarkalabs/slackbot/message"
 )
 
 type Matcher func(string) bool
 
-type CommandHandler func(*slackevents.MessageEvent) (message.Message, error)
+type CommandHandler func(*slackevents.MessageEvent) error
 
 type CommandOption func(*CommandOptions)
 type CommandOptions struct {
@@ -72,6 +71,6 @@ func (c *Command) Match(data string) bool {
 	return c.Matcher(data)
 }
 
-func (c *Command) Handle(data *slackevents.MessageEvent) (message.Message, error) {
+func (c *Command) Handle(data *slackevents.MessageEvent) error {
 	return c.Handler(data)
 }
