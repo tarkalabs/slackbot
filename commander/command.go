@@ -10,37 +10,37 @@ type Matcher func(string) bool
 
 type CommandHandler func(*slackevents.MessageEvent) error
 
-type CommandOption func(*CommandOptions)
-type CommandOptions struct {
+type CommandOption struct {
 	Name    string
 	Matcher Matcher
 	Handler CommandHandler
 }
+type CommandOptions func(*CommandOption)
 
-func WithMatcher(matcher Matcher) CommandOption {
-	return func(o *CommandOptions) {
+func WithMatcher(matcher Matcher) CommandOptions {
+	return func(o *CommandOption) {
 		o.Matcher = matcher
 	}
 }
 
-func WithEqualMatcher() CommandOption {
-	return func(o *CommandOptions) {
+func WithEqualMatcher() CommandOptions {
+	return func(o *CommandOption) {
 		o.Matcher = func(text string) bool {
 			return strings.EqualFold(text, o.Name)
 		}
 	}
 }
 
-func WithPrefixMatcher() CommandOption {
-	return func(o *CommandOptions) {
+func WithPrefixMatcher() CommandOptions {
+	return func(o *CommandOption) {
 		o.Matcher = func(text string) bool {
 			return strings.HasPrefix(text, strings.ToLower(o.Name))
 		}
 	}
 }
 
-func WithHandler(handler CommandHandler) CommandOption {
-	return func(o *CommandOptions) {
+func WithHandler(handler CommandHandler) CommandOptions {
+	return func(o *CommandOption) {
 		o.Handler = handler
 	}
 }
@@ -53,8 +53,8 @@ type Command struct {
 	Matcher          Matcher
 }
 
-func NewCommand(name, shortDescription, description string, opts ...CommandOption) Command {
-	options := CommandOptions{Name: name}
+func NewCommand(name, shortDescription, description string, opts ...CommandOptions) Command {
+	options := CommandOption{Name: name}
 	for _, o := range opts {
 		o(&options)
 	}

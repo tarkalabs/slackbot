@@ -6,14 +6,14 @@ import (
 
 type InteractionHandler func(*slackevents.MessageAction) error
 
-type InteractionOption func(*InteractionOptions)
-type InteractionOptions struct {
+type InteractionOption struct {
 	Name    string
 	Handler InteractionHandler
 }
+type InteractionOptions func(*InteractionOption)
 
-func WithHandler(handler InteractionHandler) InteractionOption {
-	return func(o *InteractionOptions) {
+func WithHandler(handler InteractionHandler) InteractionOptions {
+	return func(o *InteractionOption) {
 		o.Handler = handler
 	}
 }
@@ -23,8 +23,8 @@ type Interaction struct {
 	Handler InteractionHandler
 }
 
-func NewInteraction(name string, opts ...InteractionOption) Interaction {
-	options := InteractionOptions{Name: name}
+func NewInteraction(name string, opts ...InteractionOptions) Interaction {
+	options := InteractionOption{Name: name}
 	for _, o := range opts {
 		o(&options)
 	}
