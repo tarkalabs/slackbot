@@ -1,12 +1,9 @@
 package commander
 
 import (
-	"reflect"
 	"testing"
 
-	"github.com/nlopes/slack"
 	"github.com/nlopes/slack/slackevents"
-	"github.com/tarkalabs/slackbot/message"
 )
 
 var commandtests = []struct {
@@ -109,29 +106,6 @@ func TestHelp(t *testing.T) {
 		"*`quickadd` - Quick Add* \n For example, when you type *quickadd 12/09/2018 | Client1 | 4 | Worked on 3 stories* \nI will record *4 hours* of effort on *12 Sep 2018* for Client *Client1* with a note *Worked on 3 stories*"
 	if commander.Help() != helpstring {
 		t.Errorf("Help does not match. Got: %s, Expected: %s", commander.Help(), helpstring)
-	}
-}
-
-func TestHelpMessage(t *testing.T) {
-	commander := buildCommander()
-	msgStr := "test help message"
-	helpstring := "*`add` - Add new entry* \n Will open a dialog to enter your timesheet data" +
-		"\n\n" +
-		"*`quickadd` - Quick Add* \n For example, when you type *quickadd 12/09/2018 | Client1 | 4 | Worked on 3 stories* \nI will record *4 hours* of effort on *12 Sep 2018* for Client *Client1* with a note *Worked on 3 stories*"
-	msg := message.Message{
-		Message: msgStr,
-		Body: &slack.PostMessageParameters{
-			Attachments: []slack.Attachment{
-				{
-					Text:       helpstring,
-					Color:      "#25CCF7",
-					MarkdownIn: []string{"text"},
-				},
-			},
-		},
-	}
-	if !reflect.DeepEqual(commander.HelpMessage(msgStr), msg) {
-		t.Errorf("HelpMessage doesn't correspond to msg. Got: %v, Expected: %v", commander.HelpMessage(msgStr), msg)
 	}
 }
 

@@ -32,7 +32,7 @@ type SlackBot struct {
 	eventChan        chan *slackevents.MessageEvent
 	actionChan       chan *slackevents.MessageAction
 	submissionChan   chan *slack.DialogCallback
-	outgoingMessages chan *message.SlackMessage
+	outgoingMessages chan *message.Message
 
 	Commander  commander.Commander
 	Interactor interactor.Interactor
@@ -50,7 +50,7 @@ func New(config SlackConfig) (*SlackBot, error) {
 	slackBot.eventChan = make(chan *slackevents.MessageEvent, 50)
 	slackBot.actionChan = make(chan *slackevents.MessageAction, 50)
 	slackBot.submissionChan = make(chan *slack.DialogCallback, 50)
-	slackBot.outgoingMessages = make(chan *message.SlackMessage, 50)
+	slackBot.outgoingMessages = make(chan *message.Message, 50)
 
 	slackBot.Commander.Add(commander.NewCommand(
 		"help",
@@ -58,11 +58,10 @@ func New(config SlackConfig) (*SlackBot, error) {
 		"",
 		commander.WithEqualMatcher(),
 		commander.WithHandler(func(data *slackevents.MessageEvent) error {
-			hMsg := slackBot.Commander.HelpMessage(message.HelpMessage())
-			slackBot.SendMessage(&message.SlackMessage{
-				Channel: data.Channel,
-				Message: &hMsg,
-			})
+			slackBot.SendHelpMessage(
+				data.Channel,
+				message.HelpMessage(),
+			)
 			return nil
 		}),
 	))
@@ -108,18 +107,17 @@ func (slackBot SlackBot) handleEvents() {
 	for d := range slackBot.eventChan {
 		err := slackBot.Commander.Handle(d)
 		if err != nil {
-			msg := slackBot.Commander.HelpMessage(message.BotDidNotUnderstandMessage())
-			slackBot.SendMessage(&message.SlackMessage{
-				Channel: d.Channel,
-				Message: &msg,
-			})
+			slackBot.SendHelpMessage(d.Channel, message.BotDidNotUnderstandMessage())
 		}
 	}
 }
 
 func (slackBot SlackBot) handleActions() {
 	for d := range slackBot.actionChan {
-		slackBot.Interactor.Handle(d)
+		err := slackBot.Interactor.Handle(d)
+		if err != nil {
+			slackBot.SendHelpMessage(d.User.Id, err.Error())
+		}
 	}
 }
 
@@ -127,20 +125,16 @@ func (slackBot SlackBot) handleSubmissions() {
 	for d := range slackBot.submissionChan {
 		err := slackBot.Submitter.Handle(d)
 		if err != nil {
-			msg := slackBot.Commander.HelpMessage(err.Error())
-			slackBot.SendMessage(&message.SlackMessage{
-				Channel: d.User.ID,
-				Message: &msg,
-			})
+			slackBot.SendHelpMessage(d.User.ID, err.Error())
 		}
 	}
 }
 
 func (slackBot SlackBot) handleOutgoingMessages() {
 	for m := range slackBot.outgoingMessages {
-		m.Message.Body.Username = slackBot.config.BotID
-		m.Message.Body.AsUser = true
-		slackBot.SlackClient.PostMessage(m.Channel, m.Message.Message, *m.Message.Body)
+		m.Body.Username = slackBot.config.BotID
+		m.Body.AsUser = true
+		slackBot.SlackClient.PostMessage(m.Channel, m.Message, *m.Body)
 	}
 }
 
@@ -148,6 +142,15 @@ func (slackBot SlackBot) GetUser(userID string) (*slack.User, error) {
 	return slackBot.SlackClient.GetUserInfo(userID)
 }
 
-func (slackBot SlackBot) SendMessage(message *message.SlackMessage) {
+func (slackBot SlackBot) SendMessage(message *message.Message) {
 	slackBot.outgoingMessages <- message
+}
+
+func (slackBot SlackBot) SendHelpMessage(channel, err string) {
+	slackBot.SendMessage(
+		slackBot.Commander.HelpMessage(
+			channel,
+			err,
+		),
+	)
 }

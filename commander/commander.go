@@ -62,9 +62,6 @@ func (c *Commander) Help() string {
 	return strings.Join(helps, "\n\n")
 }
 
-func (c *Commander) HelpMessage(msg string) message.Message {
-	return message.Message{
-		Message: msg,
-		Body:    utils.GetPostMessage(c.Help()),
-	}
+func (c *Commander) HelpMessage(channel, msg string) *message.Message {
+	return message.New(channel, msg, utils.GetPostMessage(c.Help()))
 }
