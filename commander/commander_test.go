@@ -104,8 +104,13 @@ func TestHelp(t *testing.T) {
 	helpstring := "*`add` - Add new entry* \n Will open a dialog to enter your timesheet data" +
 		"\n\n" +
 		"*`quickadd` - Quick Add* \n For example, when you type *quickadd 12/09/2018 | Client1 | 4 | Worked on 3 stories* \nI will record *4 hours* of effort on *12 Sep 2018* for Client *Client1* with a note *Worked on 3 stories*"
-	if commander.Help() != helpstring {
-		t.Errorf("Help does not match. Got: %s, Expected: %s", commander.Help(), helpstring)
+	if commander.Help("") != helpstring {
+		t.Errorf("Help does not match. Got: %s, Expected: %s", commander.Help(""), helpstring)
+	}
+
+	helpstring = "*`add` - Add new entry* \n Will open a dialog to enter your timesheet data"
+	if commander.Help("add") != helpstring {
+		t.Errorf("Help does not match. Got: %s, Expected: %s", commander.Help("add"), helpstring)
 	}
 }
 
