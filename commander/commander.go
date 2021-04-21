@@ -53,15 +53,18 @@ func (c *Commander) Add(command Command) {
 	c.commands = append(c.commands, command)
 }
 
-func (c *Commander) Help() string {
+func (c *Commander) Help(cmd string) string {
 	var helps []string
 	for _, c := range c.commands {
+		if cmd != "" && cmd != c.Name {
+			continue
+		}
 		help := fmt.Sprintf("*`%s` - %s* \n %s", c.Name, c.ShortDescription, c.Description)
 		helps = append(helps, help)
 	}
 	return strings.Join(helps, "\n\n")
 }
 
-func (c *Commander) HelpMessage(channel, msg string) *message.Message {
-	return message.New(channel, msg, utils.GetPostMessage(c.Help()))
+func (c *Commander) HelpMessage(channel, msg, cmd string) *message.Message {
+	return message.New(channel, msg, utils.GetPostMessage(c.Help(cmd)))
 }

@@ -2,6 +2,7 @@ package slackbot
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/nlopes/slack"
 	"github.com/nlopes/slack/slackevents"
@@ -77,13 +78,15 @@ func New(config SlackConfig, opts ...SlackConfigs) (*SlackBot, error) {
 
 	slackBot.Commander.Add(commander.NewCommand(
 		"help",
-		"List all the commands",
-		"",
-		commander.WithEqualMatcher(),
+		"Provides help for available commands",
+		"Examples:\n`help` will show help for all available commands\n`help <command>` will show help for specific command",
+		commander.WithPrefixMatcher(),
 		commander.WithHandler(func(data *slackevents.MessageEvent) error {
+			cmd := strings.TrimSpace(data.Text[len("help"):])
 			slackBot.SendHelpMessage(
 				data.Channel,
 				message.HelpMessage(),
+				cmd,
 			)
 			return nil
 		}),
@@ -171,11 +174,12 @@ func (slackBot SlackBot) SendMessage(message *message.Message) {
 	slackBot.outgoingMessages <- message
 }
 
-func (slackBot SlackBot) SendHelpMessage(channel, err string) {
+func (slackBot SlackBot) SendHelpMessage(channel, msg, command string) {
 	slackBot.SendMessage(
 		slackBot.Commander.HelpMessage(
 			channel,
-			err,
+			msg,
+			command,
 		),
 	)
 }
