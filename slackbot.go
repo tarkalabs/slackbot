@@ -134,7 +134,7 @@ func (slackBot SlackBot) handleEvents() {
 		if slackBot.config.EventMatcher(d) {
 			err := slackBot.Commander.Handle(d)
 			if err != nil {
-				slackBot.SendHelpMessage(d.Channel, message.BotDidNotUnderstandMessage())
+				slackBot.SendHelpMessage(d.Channel, message.BotDidNotUnderstandMessage(), "")
 			}
 		}
 	}
@@ -144,7 +144,7 @@ func (slackBot SlackBot) handleActions() {
 	for d := range slackBot.actionChan {
 		err := slackBot.Interactor.Handle(d)
 		if err != nil {
-			slackBot.SendHelpMessage(d.User.Id, err.Error())
+			slackBot.SendHelpMessage(d.User.Id, err.Error(), "")
 		}
 	}
 }
@@ -153,7 +153,7 @@ func (slackBot SlackBot) handleSubmissions() {
 	for d := range slackBot.submissionChan {
 		err := slackBot.Submitter.Handle(d)
 		if err != nil {
-			slackBot.SendHelpMessage(d.User.ID, err.Error())
+			slackBot.SendHelpMessage(d.User.ID, err.Error(), "")
 		}
 	}
 }
