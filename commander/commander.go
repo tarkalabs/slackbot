@@ -55,8 +55,14 @@ func (c *Commander) Add(command Command) {
 
 func (c *Commander) Help(cmd string) string {
 	var helps []string
+	validCmd := false
 	for _, c := range c.commands {
-		if cmd != "" && cmd != c.Name {
+		if cmd == c.Name {
+			validCmd = true
+		}
+	}
+	for _, c := range c.commands {
+		if validCmd && cmd != c.Name {
 			continue
 		}
 		help := fmt.Sprintf("*`%s` - %s* \n %s", c.Name, c.ShortDescription, c.Description)
