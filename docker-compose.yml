@@ -9,6 +9,6 @@ services:
       - GO111MODULE=on
     volumes:
       - .:/go/src/slackbot
-    command: [ 'tail', '-f', '/dev/null']
+    command: ['air', '-c', '.air.toml']
     networks:
       default:
