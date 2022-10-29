@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/nlopes/slack"
-	"github.com/nlopes/slack/slackevents"
+	"github.com/slack-go/slack"
+	"github.com/slack-go/slack/slackevents"
 )
 
 func TestInteractionHandler(t *testing.T) {

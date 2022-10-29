@@ -3,7 +3,7 @@ package commander
 import (
 	"testing"
 
-	"github.com/nlopes/slack/slackevents"
+	"github.com/slack-go/slack/slackevents"
 )
 
 var commandtests = []struct {

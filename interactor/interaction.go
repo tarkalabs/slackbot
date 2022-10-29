@@ -1,7 +1,7 @@
 package interactor
 
 import (
-	"github.com/nlopes/slack/slackevents"
+	"github.com/slack-go/slack/slackevents"
 )
 
 type InteractionHandler func(*slackevents.MessageAction) error

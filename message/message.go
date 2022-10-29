@@ -1,17 +1,15 @@
 package message
 
-import "github.com/nlopes/slack"
+import "github.com/slack-go/slack"
 
 type Message struct {
 	Channel string
-	Message string
-	Body    *slack.PostMessageParameters
+	Options []slack.MsgOption
 }
 
-func New(channel, message string, body *slack.PostMessageParameters) *Message {
+func New(channel string, options ...slack.MsgOption) *Message {
 	return &Message{
 		Channel: channel,
-		Message: message,
-		Body:    body,
+		Options: options,
 	}
 }

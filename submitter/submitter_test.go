@@ -3,7 +3,7 @@ package submitter
 import (
 	"testing"
 
-	"github.com/nlopes/slack"
+	"github.com/slack-go/slack"
 )
 
 func buildSubmitter() Submitter {
