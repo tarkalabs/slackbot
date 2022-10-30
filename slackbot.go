@@ -4,14 +4,15 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/nlopes/slack"
-	"github.com/nlopes/slack/slackevents"
 	log "github.com/sirupsen/logrus"
+	"github.com/slack-go/slack"
+	"github.com/slack-go/slack/slackevents"
 	"github.com/tarkalabs/slackbot/commander"
 	"github.com/tarkalabs/slackbot/handler"
 	"github.com/tarkalabs/slackbot/interactor"
 	"github.com/tarkalabs/slackbot/message"
 	"github.com/tarkalabs/slackbot/submitter"
+	"github.com/tarkalabs/slackbot/utils"
 )
 
 type EventMatcher func(*slackevents.MessageEvent) bool
@@ -49,6 +50,7 @@ func (config SlackConfig) GetVerificationToken() slackevents.TokenComparator {
 type SlackBot struct {
 	config           SlackConfig
 	SlackClient      *slack.Client
+	slashCmdChan     chan *slack.SlashCommand
 	eventChan        chan *slackevents.MessageEvent
 	actionChan       chan *slackevents.MessageAction
 	submissionChan   chan *slack.DialogCallback
@@ -64,13 +66,13 @@ func New(config SlackConfig, opts ...SlackConfigs) (*SlackBot, error) {
 		o(&config)
 	}
 
-	slackClient := slack.New(config.APIToken)
-	slackClient.SetDebug(true)
+	slackClient := slack.New(config.APIToken, slack.OptionDebug(true))
 
 	slackBot := &SlackBot{
 		config:      config,
 		SlackClient: slackClient,
 	}
+	slackBot.slashCmdChan = make(chan *slack.SlashCommand, 50)
 	slackBot.eventChan = make(chan *slackevents.MessageEvent, 50)
 	slackBot.actionChan = make(chan *slackevents.MessageAction, 50)
 	slackBot.submissionChan = make(chan *slack.DialogCallback, 50)
@@ -97,6 +99,13 @@ func New(config SlackConfig, opts ...SlackConfigs) (*SlackBot, error) {
 
 func (slackBot *SlackBot) Listen() {
 	http.Handle(
+		"/slashcmd",
+		handler.NewSlashCmdHandler(handler.SlashCmdHandlerConfig{
+			SlashCmdChan:      slackBot.slashCmdChan,
+			VerificationToken: slackBot.config.GetVerificationToken(),
+		}),
+	)
+	http.Handle(
 		"/event",
 		handler.NewEventHandler(handler.EventHandlerConfig{
 			EventChan:         slackBot.eventChan,
@@ -112,6 +121,7 @@ func (slackBot *SlackBot) Listen() {
 		}),
 	)
 
+	go slackBot.handleSlashCmds()
 	go slackBot.handleEvents()
 	go slackBot.handleActions()
 	go slackBot.handleSubmissions()
@@ -126,6 +136,19 @@ func (slackBot SlackBot) listenAndServe() {
 	err := http.ListenAndServe(slackBot.config.Port, nil)
 	if err != nil {
 		log.Fatal("Error starting slack events listener: ", err)
+	}
+}
+
+func (slackBot SlackBot) handleSlashCmds() {
+	for d := range slackBot.slashCmdChan {
+		cmd, err := slackBot.Commander.Match(d.Command)
+		if err != nil {
+			slackBot.SendHelpMessage(d.ChannelID, message.BotDidNotUnderstandMessage(), "")
+		}
+		cmd.Handle(utils.CmdToMessageEvent(d))
+		if err != nil {
+			slackBot.SendHelpMessage(d.ChannelID, err.Error(), "")
+		}
 	}
 }
 
@@ -144,7 +167,7 @@ func (slackBot SlackBot) handleActions() {
 	for d := range slackBot.actionChan {
 		err := slackBot.Interactor.Handle(d)
 		if err != nil {
-			slackBot.SendHelpMessage(d.User.Id, err.Error(), "")
+			slackBot.SendHelpMessage(d.User.ID, err.Error(), "")
 		}
 	}
 }
@@ -160,9 +183,7 @@ func (slackBot SlackBot) handleSubmissions() {
 
 func (slackBot SlackBot) handleOutgoingMessages() {
 	for m := range slackBot.outgoingMessages {
-		m.Body.Username = slackBot.config.BotID
-		m.Body.AsUser = true
-		slackBot.SlackClient.PostMessage(m.Channel, m.Message, *m.Body)
+		slackBot.SlackClient.PostMessage(m.Channel, m.Options...)
 	}
 }
 
@@ -170,16 +191,18 @@ func (slackBot SlackBot) GetUser(userID string) (*slack.User, error) {
 	return slackBot.SlackClient.GetUserInfo(userID)
 }
 
-func (slackBot SlackBot) SendMessage(message *message.Message) {
-	slackBot.outgoingMessages <- message
+func (slackBot SlackBot) SendMessage(channel string, options ...slack.MsgOption) {
+	withBotID := append(options, slack.MsgOptionUser(slackBot.config.BotID), slack.MsgOptionAsUser(true))
+	slackBot.outgoingMessages <- message.New(channel, withBotID...)
+}
+
+func (slackBot SlackBot) SendSimpleMessage(channel, msg string) {
+	slackBot.SendMessage(channel, slack.MsgOptionText(msg, false))
 }
 
 func (slackBot SlackBot) SendHelpMessage(channel, msg, command string) {
 	slackBot.SendMessage(
-		slackBot.Commander.HelpMessage(
-			channel,
-			msg,
-			command,
-		),
+		channel,
+		slackBot.Commander.HelpMessageOptions(msg, command)...,
 	)
 }

@@ -3,8 +3,8 @@ package interactor
 import (
 	"errors"
 
-	"github.com/nlopes/slack/slackevents"
 	log "github.com/sirupsen/logrus"
+	"github.com/slack-go/slack/slackevents"
 )
 
 var (

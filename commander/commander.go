@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/nlopes/slack/slackevents"
 	log "github.com/sirupsen/logrus"
-	"github.com/tarkalabs/slackbot/message"
+	"github.com/slack-go/slack"
+	"github.com/slack-go/slack/slackevents"
 	"github.com/tarkalabs/slackbot/utils"
 )
 
@@ -71,6 +71,9 @@ func (c *Commander) Help(cmd string) string {
 	return strings.Join(helps, "\n\n")
 }
 
-func (c *Commander) HelpMessage(channel, msg, cmd string) *message.Message {
-	return message.New(channel, msg, utils.GetPostMessage(c.Help(cmd)))
+func (c *Commander) HelpMessageOptions(msg, cmd string) []slack.MsgOption {
+	return []slack.MsgOption{
+		slack.MsgOptionText(msg, false),
+		utils.InfoMessageAttachment(c.Help(cmd)),
+	}
 }

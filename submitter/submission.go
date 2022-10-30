@@ -1,7 +1,7 @@
 package submitter
 
 import (
-	"github.com/nlopes/slack"
+	"github.com/slack-go/slack"
 )
 
 type SubmissionHandler func(*slack.DialogCallback) error

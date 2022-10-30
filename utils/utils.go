@@ -1,18 +1,22 @@
 package utils
 
-import "github.com/nlopes/slack"
+import (
+	"github.com/slack-go/slack"
+	"github.com/slack-go/slack/slackevents"
+)
 
-func GetPostMessage(message string) *slack.PostMessageParameters {
-	if len(message) == 0 {
-		return &slack.PostMessageParameters{}
-	}
-	return &slack.PostMessageParameters{
-		Attachments: []slack.Attachment{
-			{
-				Text:       message,
-				Color:      "#25CCF7",
-				MarkdownIn: []string{"text"},
-			},
-		},
+func InfoMessageAttachment(message string) slack.MsgOption {
+	return slack.MsgOptionAttachments(slack.Attachment{
+		Text:       message,
+		Color:      "#25CCF7",
+		MarkdownIn: []string{"text"},
+	})
+}
+
+func CmdToMessageEvent(sc *slack.SlashCommand) *slackevents.MessageEvent {
+	return &slackevents.MessageEvent{
+		Channel: sc.ChannelID,
+		User:    sc.UserID,
+		Text:    sc.Text,
 	}
 }

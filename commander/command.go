@@ -3,7 +3,7 @@ package commander
 import (
 	"strings"
 
-	"github.com/nlopes/slack/slackevents"
+	"github.com/slack-go/slack/slackevents"
 )
 
 type Matcher func(string) bool

@@ -3,8 +3,8 @@ package submitter
 import (
 	"errors"
 
-	"github.com/nlopes/slack"
 	log "github.com/sirupsen/logrus"
+	"github.com/slack-go/slack"
 )
 
 type Submitter struct {

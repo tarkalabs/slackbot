@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/nlopes/slack"
-	"github.com/nlopes/slack/slackevents"
+	"github.com/slack-go/slack"
+	"github.com/slack-go/slack/slackevents"
 	"github.com/tarkalabs/slackbot/utils"
 )
 
